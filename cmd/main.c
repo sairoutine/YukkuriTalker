@@ -7,7 +7,7 @@ int main(int argc,char **argv){
     int speed=100;
     if(argc!=3 && argc!=4){
         printf("usage:\n");
-        printf("  aqwrap <input-file(SJIS)> <output-file(WAV)> <speed>?\n");
+        printf("  aqwrap <input-file(UTF-8)> <output-file(WAV)> <speed>?\n");
         return -1;
     }
     if(argc==4) speed=atoi(argv[3]);
@@ -29,7 +29,7 @@ int main(int argc,char **argv){
 
     // feed the text to AquesTalk
     int size;
-    unsigned char *wav=AquesTalk_Synthe(text,speed,&size);
+    unsigned char *wav=AquesTalk_Synthe_Utf8(text,speed,&size);
     free(text);
     
     if(wav==NULL){
