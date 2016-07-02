@@ -14,7 +14,7 @@ module.exports = {
 			<div>{ m.component(Navbar) }</div>
 
 			{/*jumbotron*/}
-			<div class="container" style="padding-top:30px" id="root">
+			<div class="container" style="padding-top:30px">
 				<div class="jumbotron" style="background-color: rgba(255, 255, 255, 0.7);">
 					<div class="container">
 						<h1>Yukkuri Talker</h1>
