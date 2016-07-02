@@ -17,7 +17,13 @@ module.exports = {
 		var output_filename = tmp_dir + uuid + ".wav";
 
 		return fs.writeFile(input_filename, text, function (err) {
-			if (err) return res.serverError(err);
+			if (err) {
+				return res.serverError({
+					text: text,
+					uuid: uuid,
+					err: err
+				});
+			}
 
 			// AquesTalk コマンド
 			var command = [
@@ -29,8 +35,20 @@ module.exports = {
 			].join(' ');
 
 			return exec(command, function (error, stdout, stderr) {
-				if(stderr) return res.serverError(stderr);
-				if (error !== null) return res.serverError(error);
+				if(stderr) {
+					return res.serverError({
+						text: text,
+						uuid: uuid,
+						err: stderr
+					});
+				}
+				if (error !== null) {
+					return res.serverError({
+						text: text,
+						uuid: uuid,
+						err: stderr
+					});
+				}
 
 				// wav を返す
 				var stream = fs.createReadStream(output_filename);
