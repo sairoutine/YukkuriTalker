@@ -7,7 +7,7 @@ var Top = require('./component/top.js');
 // Yukkuri Talker とは
 var About = require('./component/about.js');
 // 使いかt
-var Howto = require('./component/top.js');
+var Howto = require('./component/howto.js');
 
 
 
