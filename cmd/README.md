@@ -4,7 +4,10 @@ http://xanxys.hatenablog.jp/entry/20100116/1263608651
 
 ### コンパイル方法
 CentOS
+TODO: 64bitだとこの方法ではコンパイルできない。
+32bitでコンパイルして wine 上で64bitOSで動かすことはできる
 ```
+# yum install epel-release
 # yum install mingw32-gcc
 # ls
 quesTalk.h AquesTalk.dll AquesTalk.lib main.c
