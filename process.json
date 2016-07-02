@@ -1,0 +1,10 @@
+{
+	"apps" : [{
+		"name": "YukkuriTalker",
+		"script"      : "app.js",
+		"watch"       : ["api"],
+		"ignore_watch": ["views"],
+		"instances"  : 4,
+		"exec_mode"  : "cluster"
+	}]
+}
