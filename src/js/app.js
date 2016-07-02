@@ -18,4 +18,4 @@ function view() {
 }
 
 //HTML要素にコンポーネントをマウント
-m.mount(document.body, {view: view});
+m.mount(document.getElementById('root'), {view: view});
