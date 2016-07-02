@@ -1,21 +1,15 @@
 'use strict';
 
-import m from './mithril';
+var m = require('./mithril');
 
+// TOPページ
+var Top = require('./component/top.js');
 
-//カウンター
-var counter = 0;
-
-//タイマーでカウントアップ
-setInterval(function () {
-	counter++;
-	m.redraw(true);
-}, 1000);
-
-//ビュー
-function view() {
-	return <a href="#">count: {counter}</a>;
-}
+m.route.mode = "hash";
 
 //HTML要素にコンポーネントをマウント
-m.mount(document.getElementById('root'), {view: view});
+m.route(document.getElementById("root"), "/", {
+	"/": Top,
+	"/about": Top,
+	"/howto": Top,
+});
