@@ -13,14 +13,27 @@ var Controller = function() {
 
 		// 入力中のテキスト
 		self.text = m.prop('');
+
+		// 再生中か否か
+		self.is_playing = m.prop(false);
+
+		// サウンド
+		self.audio = new Audio();
 };
 Controller.prototype.onplay = function() {
 	var self = this;
 	return function(e) {
 		e.preventDefault();
+		if (self.is_playing()) return;
 
+		var audio = self.audio;
 
-		var audio = new Audio();
+		self.is_playing(true); // 再生中
+
+		audio.onended = function() {
+			self.is_playing(false);
+			m.redraw();
+		};
 		audio.src = self.get_url(self.text());
 		audio.play();
 	};
@@ -36,7 +49,6 @@ Controller.prototype.ondownload = function() {
 Controller.prototype.get_url = function(text) {
 	return api_url + "?text=" + encodeURIComponent(text);
 };
-
 
 module.exports = {
 	controller: Controller,
@@ -70,7 +82,7 @@ module.exports = {
 						<div class="btn-group btn-group-justified">
 							<div class="btn-group">
 								<button type="button" class="btn btn-success btn-lg" data-toggle="tooltip" data-placement="top" title="再生" onclick={ctrl.onplay()}>
-									<span class="glyphicon glyphicon-play"></span>&nbsp;再生
+									<span class={ ctrl.is_playing() ? "glyphicon glyphicon-pause" : "glyphicon glyphicon-play" }></span>&nbsp;再生
 								</button>
 							</div>
 							<div class="btn-group">
