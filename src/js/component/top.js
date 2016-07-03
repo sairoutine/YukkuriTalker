@@ -31,6 +31,7 @@ Controller.prototype.onplay = function() {
 
 
 		self.is_playing(true); // 再生中
+		m.redraw();
 
 		var url = self.get_url(self.text());
 
