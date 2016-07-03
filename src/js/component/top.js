@@ -79,8 +79,28 @@ Controller.prototype.ondownload = function() {
 	var self = this;
 	return function(e) {
 		e.preventDefault();
-		console.log('ondownload');
 
+		var bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+		var content = 'あいうえお,かきくけこ,さしすせそ';
+		var blob = new Blob([ bom, content ], { "type" : "text/csv" });
+
+		if (window.navigator.msSaveBlob) {
+			window.navigator.msSaveBlob(blob, "test.csv");
+
+			// msSaveOrOpenBlobの場合はファイルを保存せずに開ける
+			window.navigator.msSaveOrOpenBlob(blob, "test.csv");
+		} else {
+			// それ以外のブラウザ
+			  // Blobオブジェクトを指すURLオブジェクトを作る
+			  var objectURL = window.URL.createObjectURL(blob);
+			  // リンク（<a>要素）を生成し、JavaScriptからクリックする
+			  var link = document.createElement("a");
+			  document.body.appendChild(link);
+			  link.href = objectURL;
+			  link.download = "test.csv";
+			  link.click();
+			  document.body.removeChild(link);
+		}
 	};
 };
 Controller.prototype.get_url = function(text) {
@@ -152,8 +172,8 @@ module.exports = {
 			{/*navbar*/}
 			<div>{ m.component(Navbar) }</div>
 
-			{/*jumbotron*/}
 			<div class="container" style="padding-top:30px">
+				{/*jumbotron*/}
 				<div class="jumbotron" style="background-color: rgba(255, 255, 255, 0.7);">
 					<div class="container">
 						<h1>Yukkuri Talker</h1>
@@ -163,6 +183,7 @@ module.exports = {
 					</div>
 				</div>
 
+				{/* form */}
 				<div class="row">
 					<div class="col-md-9">
 						<div class="input-group input-group-lg">
