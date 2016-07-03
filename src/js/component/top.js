@@ -17,8 +17,11 @@ var Controller = function() {
 		// 再生中か否か
 		self.is_playing = m.prop(false);
 
-		// サウンド
-		self.audio = new Audio();
+		// 最後に再生したテキスト
+		self.last_text = m.prop('');
+		// 最後に再生した音声データ(base64)
+		self.last_voice_data = m.prop(null);
+
 };
 Controller.prototype.onplay = function() {
 	var self = this;
@@ -26,7 +29,6 @@ Controller.prototype.onplay = function() {
 		e.preventDefault();
 		if (self.is_playing()) return;
 
-		var audio = self.audio;
 
 		self.is_playing(true); // 再生中
 
@@ -54,7 +56,13 @@ Controller.prototype.onplay = function() {
 			deserialize: deserialize,
 		})
 		.then(function(res) {
-			var audio = new Audio("data:audio/wav;base64," + self.base64_From_ArrayBuffer(res));
+			var voice_data = self.base64_From_ArrayBuffer(res);
+
+			// キャッシュする
+			self.last_text(self.text());
+			self.last_voice_data(voice_data);
+
+			var audio = new Audio("data:audio/wav;base64," + voice_data);
 			audio.onended = function() {
 				self.is_playing(false);
 				m.redraw();
