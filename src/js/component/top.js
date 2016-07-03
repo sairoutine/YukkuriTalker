@@ -30,12 +30,84 @@ Controller.prototype.onplay = function() {
 
 		self.is_playing(true); // 再生中
 
-		audio.onended = function() {
-			self.is_playing(false);
-			m.redraw();
+		var url = self.get_url(self.text());
+
+		var xhrConfig = function(xhr) {
+			xhr.responseType = "arraybuffer";
 		};
-		audio.src = self.get_url(self.text());
-		audio.play();
+
+		var deserialize = function(value) {
+			return value;
+		};
+
+		var extract = function (xhr, xhrOptions){
+			return xhr.response;
+		};
+
+		function base64_From_ArrayBuffer(ary_buffer){
+			var dic = [
+				'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P',
+				'Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f',
+				'g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v',
+				'w','x','y','z','0','1','2','3','4','5','6','7','8','9','+','/'
+			];
+			var base64 = "";
+			var ary_u8 = new Uint8Array( ary_buffer );
+			var num = ary_u8.length;
+			var n = 0;
+			var b = 0;
+
+			var i = 0;
+			while(i < num){
+				b = ary_u8[i];
+				base64 += dic[(b >> 2)];
+				n = (b & 0x03) << 4;
+				i ++;
+				if(i >= num) break;
+
+				b = ary_u8[i];
+				base64 += dic[n | (b >> 4)];
+				n = (b & 0x0f) << 2;
+				i ++;
+				if(i >= num) break;
+
+				b = ary_u8[i];
+				base64 += dic[n | (b >> 6)];
+				base64 += dic[(b & 0x3f)];
+				i ++;
+			}
+
+			var m = num % 3;
+			if(m){
+				base64 += dic[n];
+			}
+			if(m === 1){
+				base64 += "==";
+			}else if(m === 2){
+				base64 += "=";
+			}
+			return base64;
+		}
+
+
+
+		return m.request({
+			method: "GET",
+			url: url,
+			config: xhrConfig,
+			extract: extract,
+			deserialize: deserialize,
+		})
+		.then(function(res) {
+			var audio = new Audio("data:audio/wav;base64," + base64_From_ArrayBuffer(res));
+			audio.onended = function() {
+				self.is_playing(false);
+				m.redraw();
+			};
+			audio.play();
+		}, function(err) {
+			 console.log(err);
+		});
 	};
 };
 Controller.prototype.ondownload = function() {
