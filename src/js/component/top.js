@@ -40,29 +40,33 @@ Controller.prototype.onplay = function() {
 
 		var url = self.get_url(self.text());
 
-		var xhrConfig = function(xhr) {
-			xhr.responseType = "arraybuffer";
+		var binary_request = function(params) {
+			var xhrConfig = function(xhr) {
+				xhr.responseType = "arraybuffer";
+			};
+
+			var deserialize = function(value) {
+				return value;
+			};
+
+			var extract = function (xhr, xhrOptions){
+				return xhr.response;
+			};
+
+			return m.request({
+				method: params.method,
+				url: params.url,
+				config: xhrConfig,
+				deserialize: deserialize,
+				extract: extract,
+			});
 		};
 
-		var deserialize = function(value) {
-			return value;
-		};
-
-		var extract = function (xhr, xhrOptions){
-			return xhr.response;
-		};
-
-
-
-		return m.request({
+		binary_request({
 			method: "GET",
 			url: url,
-			config: xhrConfig,
-			extract: extract,
-			deserialize: deserialize,
 		})
 		.then(function(binary) {
-
 			// キャッシュする
 			self.last_text(self.text());
 			self.last_voice_data(binary);
