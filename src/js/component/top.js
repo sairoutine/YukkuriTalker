@@ -61,15 +61,16 @@ Controller.prototype.onplay = function() {
 			extract: extract,
 			deserialize: deserialize,
 		})
-		.then(function(res) {
-			var voice_data = self.base64_From_ArrayBuffer(res);
+		.then(function(binary) {
 
 			// キャッシュする
 			self.last_text(self.text());
-			self.last_voice_data(voice_data);
+			self.last_voice_data(binary);
+
+			var base64_voice = self.base64_From_ArrayBuffer(binary);
 
 			// 再生
-			return self.play_voice_by_base64(voice_data);
+			return self.play_voice_by_base64(base64_voice);
 		}, function(err) {
 			 return console.log(err);
 		});
