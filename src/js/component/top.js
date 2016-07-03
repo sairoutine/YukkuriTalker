@@ -16,6 +16,8 @@ var Controller = function() {
 
 		// 再生中か否か
 		self.is_playing = m.prop(false);
+		// ダウンロード中か否か
+		self.is_downloading = m.prop(false);
 
 		// 最後に再生したテキスト
 		self.last_text = m.prop('');
@@ -40,29 +42,7 @@ Controller.prototype.onplay = function() {
 
 		var url = self.get_url(self.text());
 
-		var binary_request = function(params) {
-			var xhrConfig = function(xhr) {
-				xhr.responseType = "arraybuffer";
-			};
-
-			var deserialize = function(value) {
-				return value;
-			};
-
-			var extract = function (xhr, xhrOptions){
-				return xhr.response;
-			};
-
-			return m.request({
-				method: params.method,
-				url: params.url,
-				config: xhrConfig,
-				deserialize: deserialize,
-				extract: extract,
-			});
-		};
-
-		binary_request({
+		self.binary_request({
 			method: "GET",
 			url: url,
 		})
@@ -82,33 +62,85 @@ Controller.prototype.ondownload = function() {
 	var self = this;
 	return function(e) {
 		e.preventDefault();
+		if (self.is_downloading()) return;
+		self.is_playing(true); // ダウンロード中
 
-		var bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-		var content = 'あいうえお,かきくけこ,さしすせそ';
-		var blob = new Blob([ bom, content ], { "type" : "text/csv" });
-
-		if (window.navigator.msSaveBlob) {
-			window.navigator.msSaveBlob(blob, "test.csv");
-
-			// msSaveOrOpenBlobの場合はファイルを保存せずに開ける
-			window.navigator.msSaveOrOpenBlob(blob, "test.csv");
-		} else {
-			// それ以外のブラウザ
-			  // Blobオブジェクトを指すURLオブジェクトを作る
-			  var objectURL = window.URL.createObjectURL(blob);
-			  // リンク（<a>要素）を生成し、JavaScriptからクリックする
-			  var link = document.createElement("a");
-			  document.body.appendChild(link);
-			  link.href = objectURL;
-			  link.download = "test.csv";
-			  link.click();
-			  document.body.removeChild(link);
+		// キャッシュがあるならばキャッシュをダウンロード
+		if(self.text() === self.last_text()) {
+			return self.download_voice_by_binary(self.last_voice_data());
 		}
+
+		var url = self.get_url(self.text());
+
+		self.binary_request({
+			method: "GET",
+			url: url,
+		})
+		.then(function(binary) {
+			// キャッシュする
+			self.last_text(self.text());
+			self.last_voice_data(binary);
+
+			// 再生
+			return self.download_voice_by_binary(binary);
+		}, function(err) {
+			return console.log(err);
+		});
 	};
+};
+Controller.prototype.download_voice_by_binary = function (binary) {
+	var self = this;
+
+	var filename = "yukkuri.wav";
+	var uint = new Uint8Array(binary);
+	var blob = new Blob([uint], { "type" : "audio/wav" });
+
+	if (window.navigator.msSaveBlob) {
+		window.navigator.msSaveBlob(blob, filename);
+
+		// msSaveOrOpenBlobの場合はファイルを保存せずに開ける
+		window.navigator.msSaveOrOpenBlob(blob, filename);
+	}
+	else {
+		// それ以外のブラウザ
+		// Blobオブジェクトを指すURLオブジェクトを作る
+		var objectURL = window.URL.createObjectURL(blob);
+
+		// リンク（<a>要素）を生成し、JavaScriptからクリックする
+		var link = document.createElement("a");
+		document.body.appendChild(link);
+		link.href = objectURL;
+		link.download = filename;
+		link.click();
+		document.body.removeChild(link);
+	}
+	self.is_downloading(false);
 };
 Controller.prototype.get_url = function(text) {
 	return api_url + "?text=" + encodeURIComponent(text);
 };
+Controller.prototype.binary_request = function(params) {
+	var xhrConfig = function(xhr) {
+		xhr.responseType = "arraybuffer";
+	};
+
+	var deserialize = function(value) {
+		return value;
+	};
+
+	var extract = function (xhr, xhrOptions){
+		return xhr.response;
+	};
+
+	return m.request({
+		method: params.method,
+		url: params.url,
+		config: xhrConfig,
+		deserialize: deserialize,
+		extract: extract,
+	});
+};
+
 Controller.prototype.play_voice_by_binary = function(binary) {
 	var self = this;
 
