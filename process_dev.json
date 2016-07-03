@@ -1,6 +1,6 @@
 {
 	"apps" : [{
-		"name": "YukkuriTalker",
+		"name": "YukkuriTalker-Dev",
 		"script"      : "app.js",
 		"watch"       : ["api"],
 		"ignore_watch": ["views"],
