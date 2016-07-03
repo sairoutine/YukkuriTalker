@@ -2534,7 +2534,7 @@ Controller.prototype.onplay = function () {
 			// 再生
 			return self.play_voice_by_binary(binary);
 		}, function (err) {
-			return console.log(err);
+			return self.error("音声データの生成に失敗しました");
 		});
 	};
 };
@@ -2567,7 +2567,7 @@ Controller.prototype.ondownload = function () {
 			// ダウンロード
 			return self.download_voice_by_binary(binary);
 		}, function (err) {
-			return console.log(err);
+			return self.error("音声データの生成に失敗しました");
 		});
 	};
 };
@@ -2675,6 +2675,8 @@ Controller.prototype.error = function (text) {
 	var self = this;
 	self.error_message(text);
 	$('#ErrorModal').modal('show');
+	self.is_requesting(false);
+	self.is_playing(false);
 };
 
 module.exports = {
