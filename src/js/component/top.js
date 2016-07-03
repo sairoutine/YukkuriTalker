@@ -54,7 +54,7 @@ Controller.prototype.onplay = function() {
 			// 再生
 			return self.play_voice_by_binary(binary);
 		}, function(err) {
-			 return console.log(err);
+			return console.log(err);
 		});
 	};
 };
