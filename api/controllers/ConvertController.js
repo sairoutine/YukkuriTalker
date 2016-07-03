@@ -2,12 +2,15 @@
 var Uuid = require('node-uuid');
 var fs = require('fs');
 var exec = require('child_process').exec;
+var escape_kana = require('../util/escape_kana');
 
 var command_path = "./cmd/";
 var tmp_dir = "./tmp_files/";
 module.exports = {
 	easy: function (req, res) {
 		var text = req.query.text; // ボイスに変換するテキスト
+
+		text = escape_kana(text); // aquestalkの読めない文字を変換
 
 		var uuid = Uuid.v4();
 
