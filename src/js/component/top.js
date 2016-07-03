@@ -33,6 +33,11 @@ Controller.prototype.onplay = function() {
 		self.is_playing(true); // 再生中
 		m.redraw();
 
+		// キャッシュがあるならばキャッシュを再生
+		if(self.text() === self.last_text()) {
+			return self.play_voice_by_base64(self.last_voice_data());
+		}
+
 		var url = self.get_url(self.text());
 
 		var xhrConfig = function(xhr) {
@@ -63,12 +68,8 @@ Controller.prototype.onplay = function() {
 			self.last_text(self.text());
 			self.last_voice_data(voice_data);
 
-			var audio = new Audio("data:audio/wav;base64," + voice_data);
-			audio.onended = function() {
-				self.is_playing(false);
-				m.redraw();
-			};
-			return audio.play();
+			// 再生
+			return self.play_voice_by_base64(voice_data);
 		}, function(err) {
 			 return console.log(err);
 		});
@@ -84,6 +85,15 @@ Controller.prototype.ondownload = function() {
 };
 Controller.prototype.get_url = function(text) {
 	return api_url + "?text=" + encodeURIComponent(text);
+};
+Controller.prototype.play_voice_by_base64 = function(voice_data) {
+	var self = this;
+	var audio = new Audio("data:audio/wav;base64," + voice_data);
+	audio.onended = function() {
+		self.is_playing(false);
+		m.redraw();
+	};
+	return audio.play();
 };
 Controller.prototype.base64_From_ArrayBuffer = function (ary_buffer) {
 	var dic = [
