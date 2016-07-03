@@ -1,3 +1,4 @@
+/* global $ */
 'use strict';
 
 var api_url = '/convert/easy';
@@ -24,6 +25,7 @@ var Controller = function() {
 		// 最後に再生した音声データ(base64)
 		self.last_voice_data = m.prop(null);
 
+		self.error_message = m.prop("");
 };
 Controller.prototype.onplay = function() {
 	var self = this;
@@ -31,6 +33,7 @@ Controller.prototype.onplay = function() {
 		e.preventDefault();
 		if (self.is_requesting() || self.is_playing()) return;
 
+		if (self.text().length === 0 || self.text().length > 255) return self.error("テキストは1文字以上255文字以下で入力してください");
 
 		self.is_playing(true); // 再生中
 		m.redraw();
@@ -66,6 +69,8 @@ Controller.prototype.ondownload = function() {
 	return function(e) {
 		e.preventDefault();
 		if (self.is_requesting()) return;
+
+		if (self.text().length === 0 || self.text().length > 255) return self.error("テキストは1文字以上255文字以下で入力してください");
 
 		// キャッシュがあるならばキャッシュをダウンロード
 		if(self.text() === self.last_text()) {
@@ -199,7 +204,11 @@ Controller.prototype.base64_From_ArrayBuffer = function (ary_buffer) {
 	}
 	return base64;
 };
-
+Controller.prototype.error = function(text) {
+	var self = this;
+	self.error_message(text);
+	$('#ErrorModal').modal('show');
+};
 
 
 
@@ -250,6 +259,28 @@ module.exports = {
 					</div>
 				</div>
 			</div>
+
+			{/* BEGIN: エラーモーダル */}
+			<div id="ErrorModal" class="modal fade" role="dialog">
+				<div class="modal-dialog">
+
+					<div class="modal-content">
+						<div class="modal-header">
+							{/* 閉じるボタン */}
+							<button type="button" class="close" data-dismiss="modal">&times;</button>
+							<h4 class="modal-title">エラー</h4>
+						</div>
+						<div class="modal-body">
+							{/* モーダル本文 */}
+							{ ctrl.error_message() }
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-lg btn-danger" data-dismiss="modal">閉じる</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			{/* END: エラーモーダル */}
 		</div>;
 	}
 };
