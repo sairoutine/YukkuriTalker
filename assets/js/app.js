@@ -2474,6 +2474,7 @@ module.exports = {
 	}
 };
 },{"../mithril":7}],6:[function(require,module,exports){
+/* global $ */
 'use strict';
 
 var api_url = '/convert/easy';
@@ -2489,39 +2490,191 @@ var Controller = function Controller() {
 	// 入力中のテキスト
 	self.text = m.prop('');
 
+	// サーバーと通信中か否か
+	self.is_requesting = m.prop(false);
 	// 再生中か否か
 	self.is_playing = m.prop(false);
 
-	// サウンド
-	self.audio = new Audio();
+	// 最後に再生したテキスト
+	self.last_text = m.prop('');
+	// 最後に再生した音声データ(base64)
+	self.last_voice_data = m.prop(null);
+
+	self.error_message = m.prop("");
 };
 Controller.prototype.onplay = function () {
 	var self = this;
 	return function (e) {
 		e.preventDefault();
-		if (self.is_playing()) return;
+		if (self.is_requesting() || self.is_playing()) return;
 
-		var audio = self.audio;
+		if (self.text().length === 0 || self.text().length > 255) return self.error("テキストは1文字以上255文字以下で入力してください");
 
 		self.is_playing(true); // 再生中
+		m.redraw();
 
-		audio.onended = function () {
-			self.is_playing(false);
-			m.redraw();
-		};
-		audio.src = self.get_url(self.text());
-		audio.play();
+		// キャッシュがあるならばキャッシュを再生
+		if (self.text() === self.last_text()) {
+			return self.play_voice_by_binary(self.last_voice_data());
+		}
+
+		var url = self.get_url(self.text());
+
+		self.is_requesting(true); // 通信中
+		self.binary_request({
+			method: "GET",
+			url: url
+		}).then(function (binary) {
+			// キャッシュする
+			self.last_text(self.text());
+			self.last_voice_data(binary);
+
+			self.is_requesting(false); // 通信done
+
+			// 再生
+			return self.play_voice_by_binary(binary);
+		}, function (err) {
+			return console.log(err);
+		});
 	};
 };
 Controller.prototype.ondownload = function () {
 	var self = this;
 	return function (e) {
 		e.preventDefault();
-		console.log('ondownload');
+		if (self.is_requesting()) return;
+
+		if (self.text().length === 0 || self.text().length > 255) return self.error("テキストは1文字以上255文字以下で入力してください");
+
+		// キャッシュがあるならばキャッシュをダウンロード
+		if (self.text() === self.last_text()) {
+			return self.download_voice_by_binary(self.last_voice_data());
+		}
+
+		var url = self.get_url(self.text());
+
+		self.is_requesting(true); // 通信中
+		self.binary_request({
+			method: "GET",
+			url: url
+		}).then(function (binary) {
+			// キャッシュする
+			self.last_text(self.text());
+			self.last_voice_data(binary);
+
+			self.is_requesting(false); // 通信done
+
+			// ダウンロード
+			return self.download_voice_by_binary(binary);
+		}, function (err) {
+			return console.log(err);
+		});
 	};
+};
+Controller.prototype.download_voice_by_binary = function (binary) {
+	var filename = "yukkuri.wav";
+	var uint = new Uint8Array(binary);
+	var blob = new Blob([uint], { "type": "audio/wav" });
+
+	if (window.navigator.msSaveBlob) {
+		window.navigator.msSaveBlob(blob, filename);
+
+		// msSaveOrOpenBlobの場合はファイルを保存せずに開ける
+		window.navigator.msSaveOrOpenBlob(blob, filename);
+	} else {
+		// それ以外のブラウザ
+		// Blobオブジェクトを指すURLオブジェクトを作る
+		var objectURL = window.URL.createObjectURL(blob);
+
+		// リンク（<a>要素）を生成し、JavaScriptからクリックする
+		var link = document.createElement("a");
+		document.body.appendChild(link);
+		link.href = objectURL;
+		link.download = filename;
+		link.click();
+		document.body.removeChild(link);
+	}
 };
 Controller.prototype.get_url = function (text) {
 	return api_url + "?text=" + encodeURIComponent(text);
+};
+Controller.prototype.binary_request = function (params) {
+	var xhrConfig = function xhrConfig(xhr) {
+		xhr.responseType = "arraybuffer";
+	};
+
+	var deserialize = function deserialize(value) {
+		return value;
+	};
+
+	var extract = function extract(xhr, xhrOptions) {
+		return xhr.response;
+	};
+
+	return m.request({
+		method: params.method,
+		url: params.url,
+		config: xhrConfig,
+		deserialize: deserialize,
+		extract: extract
+	});
+};
+
+Controller.prototype.play_voice_by_binary = function (binary) {
+	var self = this;
+
+	var voice_data = self.base64_From_ArrayBuffer(binary);
+
+	var audio = new Audio("data:audio/wav;base64," + voice_data);
+	audio.onended = function () {
+		self.is_playing(false);
+		m.redraw();
+	};
+	return audio.play();
+};
+Controller.prototype.base64_From_ArrayBuffer = function (ary_buffer) {
+	var dic = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'];
+	var base64 = "";
+	var ary_u8 = new Uint8Array(ary_buffer);
+	var num = ary_u8.length;
+	var n = 0;
+	var b = 0;
+
+	var i = 0;
+	while (i < num) {
+		b = ary_u8[i];
+		base64 += dic[b >> 2];
+		n = (b & 0x03) << 4;
+		i++;
+		if (i >= num) break;
+
+		b = ary_u8[i];
+		base64 += dic[n | b >> 4];
+		n = (b & 0x0f) << 2;
+		i++;
+		if (i >= num) break;
+
+		b = ary_u8[i];
+		base64 += dic[n | b >> 6];
+		base64 += dic[b & 0x3f];
+		i++;
+	}
+
+	var m = num % 3;
+	if (m) {
+		base64 += dic[n];
+	}
+	if (m === 1) {
+		base64 += "==";
+	} else if (m === 2) {
+		base64 += "=";
+	}
+	return base64;
+};
+Controller.prototype.error = function (text) {
+	var self = this;
+	self.error_message(text);
+	$('#ErrorModal').modal('show');
 };
 
 module.exports = {
@@ -2604,20 +2757,48 @@ module.exports = {
 					attrs: { className: 'row' }
 				}],
 				attrs: { className: 'container', style: 'padding-top:30px' }
+			}, {
+				tag: 'div',
+				children: [{
+					tag: 'div',
+					children: [{
+						tag: 'div',
+						children: [{
+							tag: 'div',
+							children: [{
+								tag: 'button',
+								children: ['×'],
+								attrs: { type: 'button', className: 'close', 'data-dismiss': 'modal' }
+							}, {
+								tag: 'h4',
+								children: ['エラー'],
+								attrs: { className: 'modal-title' }
+							}],
+							attrs: { className: 'modal-header' }
+						}, {
+							tag: 'div',
+							children: [ctrl.error_message()],
+							attrs: { className: 'modal-body' }
+						}, {
+							tag: 'div',
+							children: [{
+								tag: 'button',
+								children: ['閉じる'],
+								attrs: { type: 'button', className: 'btn btn-lg btn-danger', 'data-dismiss': 'modal' }
+							}],
+							attrs: { className: 'modal-footer' }
+						}],
+						attrs: { className: 'modal-content' }
+					}],
+					attrs: { className: 'modal-dialog' }
+				}],
+				attrs: { id: 'ErrorModal', className: 'modal fade', role: 'dialog' }
 			}]
 		};
 	}
 };
 },{"../mithril":7,"./navbar":5}],7:[function(require,module,exports){
 'use strict';
-
-/*********************************************
- * mithril フレームワークを拡張する
- *********************************************/
-
-// クライアントのバージョン番号
-
-var version = 1;
 
 var m = require('mithril');
 
@@ -2628,22 +2809,6 @@ var m = require('mithril');
 // 上書き前の m.request
 var request = m.request;
 
-// サーバから取得したデータを parse する関数
-var unwrapSuccess = function unwrapSuccess(res) {
-	// status が success でなければ
-	if (res.status !== 'success') {
-		throw new Error(res.error_code);
-	}
-
-	// 新しいAPIのバージョンがリリースされてれば
-	if (res.version > version) {
-		throw new Error();
-	}
-
-	// response の中身がサーバから受け取るデータの本質
-	return res.response;
-};
-
 // m.request を上書き
 m.request = function (args) {
 	// ローディング画面
@@ -2652,11 +2817,6 @@ m.request = function (args) {
 	// サーバと通信中はローディング画面を表示
 	for (var i = 0; i < loaders.length; i++) {
 		loaders[i].style.display = "block";
-	}
-
-	// サーバから取得したデータを parse
-	if (!args.unwrapSuccess) {
-		args.unwrapSuccess = unwrapSuccess;
 	}
 
 	return request(args).then(function (value) {
@@ -2671,8 +2831,7 @@ m.request = function (args) {
 			loaders[i].style.display = "none";
 		}
 
-		// エラー画面に遷移
-		m.route('/error');
+		throw error;
 	});
 };
 
