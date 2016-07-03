@@ -14,10 +14,10 @@ var Controller = function() {
 		// 入力中のテキスト
 		self.text = m.prop('');
 
+		// サーバーと通信中か否か
+		self.is_requesting = m.prop(false);
 		// 再生中か否か
 		self.is_playing = m.prop(false);
-		// ダウンロード中か否か
-		self.is_downloading = m.prop(false);
 
 		// 最後に再生したテキスト
 		self.last_text = m.prop('');
@@ -29,7 +29,7 @@ Controller.prototype.onplay = function() {
 	var self = this;
 	return function(e) {
 		e.preventDefault();
-		if (self.is_playing()) return;
+		if (self.is_requesting() || self.is_playing()) return;
 
 
 		self.is_playing(true); // 再生中
@@ -42,6 +42,7 @@ Controller.prototype.onplay = function() {
 
 		var url = self.get_url(self.text());
 
+		self.is_requesting(true); // 通信中
 		self.binary_request({
 			method: "GET",
 			url: url,
@@ -50,6 +51,8 @@ Controller.prototype.onplay = function() {
 			// キャッシュする
 			self.last_text(self.text());
 			self.last_voice_data(binary);
+
+			self.is_requesting(false); // 通信done
 
 			// 再生
 			return self.play_voice_by_binary(binary);
@@ -62,8 +65,7 @@ Controller.prototype.ondownload = function() {
 	var self = this;
 	return function(e) {
 		e.preventDefault();
-		if (self.is_downloading()) return;
-		self.is_playing(true); // ダウンロード中
+		if (self.is_requesting()) return;
 
 		// キャッシュがあるならばキャッシュをダウンロード
 		if(self.text() === self.last_text()) {
@@ -72,6 +74,7 @@ Controller.prototype.ondownload = function() {
 
 		var url = self.get_url(self.text());
 
+		self.is_requesting(true); // 通信中
 		self.binary_request({
 			method: "GET",
 			url: url,
@@ -81,7 +84,9 @@ Controller.prototype.ondownload = function() {
 			self.last_text(self.text());
 			self.last_voice_data(binary);
 
-			// 再生
+			self.is_requesting(false); // 通信done
+
+			// ダウンロード
 			return self.download_voice_by_binary(binary);
 		}, function(err) {
 			return console.log(err);
@@ -89,8 +94,6 @@ Controller.prototype.ondownload = function() {
 	};
 };
 Controller.prototype.download_voice_by_binary = function (binary) {
-	var self = this;
-
 	var filename = "yukkuri.wav";
 	var uint = new Uint8Array(binary);
 	var blob = new Blob([uint], { "type" : "audio/wav" });
@@ -114,7 +117,6 @@ Controller.prototype.download_voice_by_binary = function (binary) {
 		link.click();
 		document.body.removeChild(link);
 	}
-	self.is_downloading(false);
 };
 Controller.prototype.get_url = function(text) {
 	return api_url + "?text=" + encodeURIComponent(text);
