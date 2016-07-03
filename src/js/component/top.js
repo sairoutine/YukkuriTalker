@@ -35,7 +35,7 @@ Controller.prototype.onplay = function() {
 
 		// キャッシュがあるならばキャッシュを再生
 		if(self.text() === self.last_text()) {
-			return self.play_voice_by_base64(self.last_voice_data());
+			return self.play_voice_by_binary(self.last_voice_data());
 		}
 
 		var url = self.get_url(self.text());
@@ -71,10 +71,8 @@ Controller.prototype.onplay = function() {
 			self.last_text(self.text());
 			self.last_voice_data(binary);
 
-			var base64_voice = self.base64_From_ArrayBuffer(binary);
-
 			// 再生
-			return self.play_voice_by_base64(base64_voice);
+			return self.play_voice_by_binary(binary);
 		}, function(err) {
 			 return console.log(err);
 		});
@@ -111,8 +109,11 @@ Controller.prototype.ondownload = function() {
 Controller.prototype.get_url = function(text) {
 	return api_url + "?text=" + encodeURIComponent(text);
 };
-Controller.prototype.play_voice_by_base64 = function(voice_data) {
+Controller.prototype.play_voice_by_binary = function(binary) {
 	var self = this;
+
+	var voice_data = self.base64_From_ArrayBuffer(binary);
+
 	var audio = new Audio("data:audio/wav;base64," + voice_data);
 	audio.onended = function() {
 		self.is_playing(false);
