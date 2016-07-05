@@ -224,6 +224,7 @@ module.exports = {
 			<div>{ m.component(Navbar) }</div>
 
 			<div class="container" style="padding-top:30px">
+				<img src="reimu_168.png" class="pull-right visible-lg" />
 				{/*jumbotron*/}
 				<div class="jumbotron" style="background-color: rgba(255, 255, 255, 0.7);">
 					<div class="container">
