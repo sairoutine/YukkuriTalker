@@ -2690,6 +2690,9 @@ module.exports = {
 			}, {
 				tag: 'div',
 				children: [{
+					tag: 'img',
+					attrs: { src: 'reimu_168.png', className: 'pull-right visible-lg' }
+				}, {
 					tag: 'div',
 					children: [{
 						tag: 'div',
