@@ -32,6 +32,8 @@ module.exports = {
 					<div class="panel-body">
 						ゆっくりボイスの作成には Aques Talk を使用させていただいております。<br />
 						ボイスの使用に関しては Aques Talk のライセンスに準拠します。<br />
+
+						また、当サイトで使用しているゆっくり画像は<a href="http://www.nicotalk.com/charasozai_kt.html">きつねゆっくり素材</a>をお借りしております。<br />
 					</div>
 				</div>
 

@@ -2299,6 +2299,12 @@ module.exports = {
 							tag: 'br'
 						}, 'ボイスの使用に関しては Aques Talk のライセンスに準拠します。', {
 							tag: 'br'
+						}, 'また、当サイトで使用しているゆっくり画像は', {
+							tag: 'a',
+							children: ['きつねゆっくり素材'],
+							attrs: { href: 'http://www.nicotalk.com/charasozai_kt.html' }
+						}, 'をお借りしております。', {
+							tag: 'br'
 						}],
 						attrs: { className: 'panel-body' }
 					}],
