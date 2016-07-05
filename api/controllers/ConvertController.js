@@ -19,7 +19,7 @@ module.exports = {
 		var input_filename = tmp_dir + uuid + ".txt";
 		var output_filename = tmp_dir + uuid + ".wav";
 
-		return fs.writeFile(input_filename, text, function (err) {
+		return fs.writeFile(input_filename, text + "\n", function (err) {
 			if (err) {
 				return res.serverError({
 					text: text,
