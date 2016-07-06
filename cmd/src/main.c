@@ -15,7 +15,7 @@ int main(int argc,char **argv){
 
 	// load text
 	unsigned char *text;
-	fgets(text, fsize(text), stdin);
+	fgets(text, 256, stdin);
 
 	// feed the text to AquesTalk
 	int size;
