@@ -3,29 +3,19 @@
 #include "AquesTalk.h"
 
 int main(int argc,char **argv){
+	int speed=100; // default
+
 	// parse arguments
-	int speed=100;
-	if(argc!=3 && argc!=4){
+	if(argc!=2 && argc!=3){
 		printf("usage:\n");
-		printf("  aqwrap <input-file(UTF-8)> <output-file(WAV)> <speed>?\n");
+		printf("AquesTalk.exe <output-file(WAV)> <speed>\n");
 		return -1;
 	}
-	if(argc==4) speed=atoi(argv[3]);
+	if(argc==3) speed=atoi(argv[2]);
 
 	// load text
 	unsigned char *text;
-	FILE *fi=fopen(argv[1],"rb");
-	if(fi==NULL){
-		fprintf(stderr,"couldn't open input file %s\n",argv[1]);
-		return -2;
-	}
-	fseek(fi,0,SEEK_END);
-	int fsize=ftell(fi);
-	text=malloc(fsize);
-	fseek(fi,0,SEEK_SET);
-
-	fread(text,fsize,1,fi);
-	fclose(fi);
+	fgets(text, fsize(text), stdin);
 
 	// feed the text to AquesTalk
 	int size;
@@ -38,7 +28,7 @@ int main(int argc,char **argv){
 	}
 
 	// write out to a file
-	FILE *fo=fopen(argv[2],"wb");
+	FILE *fo=fopen(argv[1],"wb");
 	if(fo==NULL){
 		fprintf(stderr,"couldn't open output file %s\n",argv[2]);
 		AquesTalk_FreeWave(wav);
@@ -49,4 +39,4 @@ int main(int argc,char **argv){
 	fclose(fo);
 
 	return 0;
-	}
+}
