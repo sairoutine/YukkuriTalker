@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "AquesTalk.h"
+#include "AquesTalk2.h"
 
 int main (int argc, char **argv)
 {
@@ -33,7 +33,7 @@ int main (int argc, char **argv)
 
 	// AquesTalkにテキストを読ませる
 	int size;
-	unsigned char *wav = AquesTalk_Synthe_Utf8(text, speed, &size);
+	unsigned char *wav = AquesTalk2_Synthe(text, speed, &size, 0);
 	free(text);
 
 	if (wav == NULL) {
@@ -45,11 +45,11 @@ int main (int argc, char **argv)
 	FILE *fo = fopen(argv[2], "wb");
 	if (fo == NULL) {
 		fprintf(stderr, "Could not open output file. (file=%s)\n", argv[2]);
-		AquesTalk_FreeWave(wav);
+		AquesTalk2_FreeWave(wav);
 		return -2;
 	}
 	fwrite(wav, 1, size, fo);
-	AquesTalk_FreeWave(wav);
+	AquesTalk2_FreeWave(wav);
 	fclose(fo);
 
 	// 正常終了
