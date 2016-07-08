@@ -1,53 +1,65 @@
+/**
+ * AquesTalkサンプル
+ *
+ * @package		YukkuriTalk
+ * @author		松井 健太郎 (Kentaro Matsui) <info@ke-tai.org>
+ * @link		http://www.a-quest.com/products/aquestalk.html
+ * @link		http://d.hatena.ne.jp/xanxys/20100116/1263608651
+ */
 #include <stdio.h>
 #include <stdlib.h>
-#include <AquesTalk2.h>
+#include "AquesTalk.h"
 
-int main(int argc,char **argv){
-    // parse arguments
-    int speed=100;
-    if(argc!=3 && argc!=4){
-        printf("usage:\n");
-        printf("  aqwrap <input-file(SJIS)> <output-file(WAV)> <speed>?\n");
-        return -1;
-    }
-    if(argc==4) speed=atoi(argv[3]);
+int main (int argc, char **argv)
+{
+	// デフォルトスピード
+	int speed = 80;
 
-    // load text
-    unsigned char *text;
-    FILE *fi=fopen(argv[1],"rb");
-    if(fi==NULL){
-        fprintf(stderr,"couldn't open input file %s\n",argv[1]);
-        return -2;
-    }
-    fseek(fi,0,SEEK_END);
-    int fsize=ftell(fi);
-    text=malloc(fsize);
-    fseek(fi,0,SEEK_SET);
+	// 引数を取得
+	if (argc != 3 && argc != 4) {
+		printf("Usage: AquesTalk.exe INPUT_FILE(SJIS) OUTPUT_FILE(WAV) [SPEED]\n");
+		return -1;
+	}
+	if (argc == 4) {
+		speed = atoi(argv[3]);
+	}
 
-    fread(text,fsize,1,fi);
-    fclose(fi);
+	// テキストの読み込み
+	unsigned char *text;
+	FILE *fi = fopen(argv[1], "rb");
+	if (fi == NULL) {
+		fprintf(stderr, "[Error] Could not open input file. (file=%s)\n", argv[1]);
+		return -2;
+	}
+	fseek(fi, 0, SEEK_END);
+	int fsize = ftell(fi);
+	text = malloc(fsize);
+	fseek(fi, 0, SEEK_SET);
 
-    // feed the text to AquesTalk
-    int size;
-    unsigned char *wav=AquesTalk2_Synthe_Utf16(text,speed,&size, 0);
-    free(text);
+	fread(text, fsize, 1, fi);
+	fclose(fi);
 
-    if(wav==NULL){
-        fprintf(stderr,"AquesTalk_Synthe:error:%d\n",size);
-        return -1;
-    }
+	// AquesTalkにテキストを読ませる
+	int size;
+	unsigned char *wav = AquesTalk_Synthe(text, speed, &size);
+	free(text);
 
-    // write out to a file
-    FILE *fo=fopen(argv[2],"wb");
-    if(fo==NULL){
-        fprintf(stderr,"couldn't open output file %s\n",argv[2]);
-        AquesTalk2_FreeWave(wav);
-        return -2;
-    }
-    fwrite(wav,1,size,fo);
-    AquesTalk2_FreeWave(wav);
-    fclose(fo);
+	if (wav == NULL) {
+		fprintf(stderr,"AquesTalk_Synthe:error:%d\n", size);
+		return -1;
+	}
 
-    return 0;
+	// WAVファイルの出力
+	FILE *fo = fopen(argv[2], "wb");
+	if (fo == NULL) {
+		fprintf(stderr, "Could not open output file. (file=%s)\n", argv[2]);
+		AquesTalk_FreeWave(wav);
+		return -2;
+	}
+	fwrite(wav, 1, size, fo);
+	AquesTalk_FreeWave(wav);
+	fclose(fo);
+
+	// 正常終了
+	return 0;
 }
-
