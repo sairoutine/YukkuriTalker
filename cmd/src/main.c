@@ -33,7 +33,7 @@ int main (int argc, char **argv)
 
 	// AquesTalkにテキストを読ませる
 	int size;
-	unsigned char *wav = AquesTalk2_Synthe(text, speed, &size, 0);
+	unsigned char *wav = AquesTalk2_Synthe_Utf8(text, speed, &size, 0);
 	free(text);
 
 	if (wav == NULL) {
