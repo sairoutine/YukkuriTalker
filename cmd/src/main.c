@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "AquesTalk2.h"
+#include <AquesTalk2.h>
 
 int main(int argc,char **argv){
     // parse arguments
