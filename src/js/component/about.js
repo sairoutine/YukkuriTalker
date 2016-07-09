@@ -30,9 +30,9 @@ module.exports = {
 						作成したゆっくりボイスの使用について
 					</div>
 					<div class="panel-body">
-						ゆっくりボイスの作成には Aques Talk を使用させていただいております。<br />
-						ボイスの使用に関しては Aques Talk のライセンスに準拠します。<br />
-
+						本サービスは、(株)アクエストの音声合成ライブラリ<a href="http://www.a-quest.com/products/aquestalk.html">AquesTalk</a>を使用しており、<br />
+						その著作権は同社に帰属します。営利目的での使用は当該ライブラリの使用ライセンスが必要となります。<br />
+						<br />
 						また、当サイトで使用しているゆっくり画像は<a href="http://www.nicotalk.com/charasozai_kt.html">きつねゆっくり素材</a>をお借りしております。<br />
 					</div>
 				</div>
