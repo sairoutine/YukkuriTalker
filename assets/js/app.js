@@ -2735,7 +2735,7 @@ module.exports = {
 								attrs: { className: 'input-group-addon', id: 'sizing-addon' }
 							}, {
 								tag: 'input',
-								attrs: { type: 'text', className: 'form-control', placeholder: 'ゆっくりボイスにするテキストを入力', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'ゆっくりボイスにするテキストを入力', 'aria-describedby': 'sizing-addon', value: ctrl.text(), onchange: m.withAttr('value', ctrl.text) }
+								attrs: { type: 'text', className: 'form-control', placeholder: 'ゆっくりボイスにするテキストをひらがなで入力', 'data-toggle': 'tooltip', 'data-placement': 'top', title: 'ゆっくりボイスにするテキストをひらがなで入力', 'aria-describedby': 'sizing-addon', value: ctrl.text(), onchange: m.withAttr('value', ctrl.text) }
 							}],
 							attrs: { className: 'input-group input-group-lg' }
 						}],

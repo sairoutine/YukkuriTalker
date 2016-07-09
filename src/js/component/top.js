@@ -242,7 +242,7 @@ module.exports = {
 							<span class="input-group-addon" id="sizing-addon">
 								<span class="glyphicon glyphicon-pencil"></span>
 							</span>
-							<input type="text" class="form-control" placeholder="ゆっくりボイスにするテキストを入力" data-toggle="tooltip" data-placement="top" title="ゆっくりボイスにするテキストを入力" aria-describedby="sizing-addon" value={ctrl.text()} onchange={m.withAttr('value', ctrl.text)} />
+							<input type="text" class="form-control" placeholder="ゆっくりボイスにするテキストをひらがなで入力" data-toggle="tooltip" data-placement="top" title="ゆっくりボイスにするテキストをひらがなで入力" aria-describedby="sizing-addon" value={ctrl.text()} onchange={m.withAttr('value', ctrl.text)} />
 						</div>
 					</div>
 
