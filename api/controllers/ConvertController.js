@@ -17,8 +17,10 @@ module.exports = {
 		var speed = 100; // 再生スピード
 
 		var input_filename = tmp_dir + uuid + ".txt";
+		var nkfed_filename = tmp_dir + uuid + "-sjis.txt";
 		var output_filename = tmp_dir + uuid + ".wav";
 
+		// ファイルに書き出し
 		return fs.writeFile(input_filename, text + "\n", function (err) {
 			if (err) {
 				return res.serverError({
@@ -28,15 +30,16 @@ module.exports = {
 				});
 			}
 
-			// AquesTalk コマンド
+			// nkf コマンド
 			var command = [
-				'wine',
-				command_path + 'AquesTalk.exe',
+				'nkf',
+				'-s',
 				input_filename,
-				output_filename,
-				speed,
+				'>',
+				nkfed_filename,
 			].join(' ');
 
+			// nkf で sjis に変換
 			return exec(command, function (error, stdout, stderr) {
 				if(stderr) {
 					return res.serverError({
@@ -53,10 +56,36 @@ module.exports = {
 					});
 				}
 
-				// wav を返す
-				var stream = fs.createReadStream(output_filename);
-				res.type('audio/wav');
-				return stream.pipe(res);
+				// AquesTalk コマンド
+				var command = [
+					'wine',
+					command_path + 'AquesTalk2.exe',
+					nkfed_filename,
+					output_filename,
+					speed,
+				].join(' ');
+
+				return exec(command, function (error, stdout, stderr) {
+					if(stderr) {
+						return res.serverError({
+							text: text,
+							uuid: uuid,
+							err: stderr
+						});
+					}
+					if (error !== null) {
+						return res.serverError({
+							text: text,
+							uuid: uuid,
+							err: stderr
+						});
+					}
+
+					// wav を返す
+					var stream = fs.createReadStream(output_filename);
+					res.type('audio/wav');
+					return stream.pipe(res);
+				});
 			});
 		});
 	},
